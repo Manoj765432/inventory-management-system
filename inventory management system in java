@@ -1,0 +1,223 @@
+import java.util.*;
+
+class Item {
+    private String name;
+    private int quantity;
+    private double price;
+
+    public Item(String name, int quantity, double price) {
+        this.name = name;
+        this.quantity = quantity;
+        this.price = price;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Item: %s | Quantity: %d | Price: %.2f", name, quantity, price);
+    }
+}
+
+class Inventory {
+    private Map<String, Item> items;
+
+    public Inventory() {
+        items = new HashMap<>();
+    }
+
+    public void addItem(Item item) {
+        if (items.containsKey(item.getName())) {
+            Item existingItem = items.get(item.getName());
+            existingItem.setQuantity(existingItem.getQuantity() + item.getQuantity());
+        } else {
+            items.put(item.getName(), item);
+        }
+    }
+
+    public void updateItemPrice(String itemName, double newPrice) {
+        Item item = items.get(itemName);
+        if (item != null) {
+            item.setPrice(newPrice);
+        } else {
+            System.out.println("Item not found.");
+        }
+    }
+
+    public void removeItem(String itemName) {
+        if (items.containsKey(itemName)) {
+            items.remove(itemName);
+        } else {
+            System.out.println("Item not found.");
+        }
+    }
+
+    public void displayInventory() {
+        if (items.isEmpty()) {
+            System.out.println("Inventory is empty.");
+        } else {
+            items.forEach((key, item) -> System.out.println(item));
+        }
+    }
+
+    public Item getItem(String itemName) {
+        return items.get(itemName);
+    }
+}
+
+class Transaction {
+    private String itemName;
+    private int quantity;
+    private double totalPrice;
+
+    public Transaction(String itemName, int quantity, double totalPrice) {
+        this.itemName = itemName;
+        this.quantity = quantity;
+        this.totalPrice = totalPrice;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public double getTotalPrice() {
+        return totalPrice;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Transaction: %s | Quantity: %d | Total Price: %.2f", itemName, quantity, totalPrice);
+    }
+}
+
+class SalesManager {
+    private Inventory inventory;
+    private List<Transaction> transactions;
+
+    public SalesManager(Inventory inventory) {
+        this.inventory = inventory;
+        this.transactions = new ArrayList<>();
+    }
+
+    public void sellItem(String itemName, int quantity) {
+        Item item = inventory.getItem(itemName);
+        if (item != null && item.getQuantity() >= quantity) {
+            double totalPrice = item.getPrice() * quantity;
+            item.setQuantity(item.getQuantity() - quantity);
+            transactions.add(new Transaction(itemName, quantity, totalPrice));
+            System.out.println("Sale successful!");
+        } else {
+            System.out.println("Insufficient stock or item not found.");
+        }
+    }
+
+    public void viewTransactions() {
+        if (transactions.isEmpty()) {
+            System.out.println("No transactions yet.");
+        } else {
+            transactions.forEach(transaction -> System.out.println(transaction));
+        }
+    }
+
+    public void displayInventory() {
+        inventory.displayInventory();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Inventory inventory = new Inventory();
+        SalesManager salesManager = new SalesManager(inventory);
+
+        Scanner scanner = new Scanner(System.in);
+
+        // Sample items to start the inventory
+        inventory.addItem(new Item("Laptop", 10, 800.00));
+        inventory.addItem(new Item("Smartphone", 15, 400.00));
+        inventory.addItem(new Item("Tablet", 20, 300.00));
+
+        boolean exit = false;
+        while (!exit) {
+            System.out.println("\n--- Inventory Management System ---");
+            System.out.println("1. Display Inventory");
+            System.out.println("2. Add Item");
+            System.out.println("3. Sell Item");
+            System.out.println("4. Update Item Price");
+            System.out.println("5. Remove Item");
+            System.out.println("6. View Sales Transactions");
+            System.out.println("7. Exit");
+            System.out.print("Choose an option: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine();  // Consume the newline character
+
+            switch (choice) {
+                case 1:
+                    salesManager.displayInventory();
+                    break;
+                case 2:
+                    System.out.print("Enter item name: ");
+                    String name = scanner.nextLine();
+                    System.out.print("Enter item quantity: ");
+                    int quantity = scanner.nextInt();
+                    System.out.print("Enter item price: ");
+                    double price = scanner.nextDouble();
+                    salesManager.inventory.addItem(new Item(name, quantity, price));
+                    System.out.println("Item added successfully!");
+                    break;
+                case 3:
+                    System.out.print("Enter item name to sell: ");
+                    String itemToSell = scanner.nextLine();
+                    System.out.print("Enter quantity to sell: ");
+                    int sellQuantity = scanner.nextInt();
+                    salesManager.sellItem(itemToSell, sellQuantity);
+                    break;
+                case 4:
+                    System.out.print("Enter item name to update price: ");
+                    String itemToUpdate = scanner.nextLine();
+                    System.out.print("Enter new price: ");
+                    double newPrice = scanner.nextDouble();
+                    salesManager.inventory.updateItemPrice(itemToUpdate, newPrice);
+                    break;
+                case 5:
+                    System.out.print("Enter item name to remove: ");
+                    String itemToRemove = scanner.nextLine();
+                    salesManager.inventory.removeItem(itemToRemove);
+                    break;
+                case 6:
+                    salesManager.viewTransactions();
+                    break;
+                case 7:
+                    exit = true;
+                    break;
+                default:
+                    System.out.println("Invalid option. Try again.");
+            }
+        }
+
+        scanner.close();
+        System.out.println("System exiting...");
+    }
+}
